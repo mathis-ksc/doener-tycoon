@@ -361,3 +361,22 @@ body.kein-vollbild .vollbild-knopf { display: none !important; }
 }
 #start-vollbild:hover { color: var(--orange); }
 #start:not([data-modus="titel"]) #start-vollbild { display: none; }
+
+/* ---------- iPhone als App: Abstand zur Kamera-Kerbe und zum Home-Strich ---------- */
+body {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+#start-buehne { max-width: calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)); }
+
+/* ---------- Hinweis: vom Home-Bildschirm starten (nur iPhone/iPad im Browser) ---------- */
+#app-tipp {
+  display: none; position: absolute; left: 50%; top: 2%; transform: translateX(-50%); z-index: 2;
+  padding: 0.5vw 1.2vw; white-space: nowrap; width: max-content; max-width: 96%;
+  font-family: var(--schrift); font-size: clamp(14px, 1.6vw, 22px);
+  background: var(--orange); color: var(--schwarz); border: 3px solid var(--schwarz); box-shadow: 4px 4px 0 var(--schwarz);
+}
+body.app-tipp-zeigen #start[data-modus="diskette"] #app-tipp,
+body.app-tipp-zeigen #start[data-modus="titel"] #app-tipp { display: block; }
+#start[data-modus="diskette"] #app-tipp { top: auto; bottom: 22%; }

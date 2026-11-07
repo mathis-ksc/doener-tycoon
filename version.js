@@ -4,9 +4,10 @@
 //  0.x.0 = neue Sachen · 0.x.y = kleine Reparaturen
 //  Die neueste Version steht immer oben.
 
-const VERSION = '0.7.0';
+const VERSION = '0.7.1';
 
 const AENDERUNGEN = [
+  { version: '0.7.1', datum: '07.11.2026', was: 'iPhone: Hinweis „Zum Home-Bildschirm“ für Spielen ohne Leisten, Abstand zur Kamera-Kerbe' },
   { version: '0.7.0', datum: '07.11.2026', was: 'Eigene Webadresse auf GitHub: als App auf den Home-Bildschirm, mit eigenem Icon, ohne Browser-Leisten. Credits angepasst' },
   { version: '0.6.1', datum: '07.11.2026', was: 'Vollbild-Knopf: Spiel ohne Browser-Leisten (iPad und Computer), auf Touch-Geräten automatisch beim Diskette-Einlegen' },
   { version: '0.6.0', datum: '07.11.2026', was: 'Spielbar auf Handy und iPad (Querformat), kein Zoomen, App-Icon, online auf claude.ai' },

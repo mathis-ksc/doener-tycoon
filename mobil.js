@@ -59,3 +59,14 @@ function vollbildUmschalten(nurAn = false) {
 document.body.classList.toggle('kein-vollbild', !vollbildMoeglich());
 ['fullscreenchange', 'webkitfullscreenchange'].forEach(art =>
   document.addEventListener(art, () => document.body.classList.toggle('vollbild', istVollbild())));
+
+// ---------- Hinweis für iPhone/iPad: als App starten ----------
+// Auf dem iPhone kann Safari seine Leisten nicht ausblenden (kein Vollbild).
+// Ohne Leisten geht es nur, wenn man das Spiel vom Home-Bildschirm startet.
+const IST_APPLE_MOBIL = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);   // neuere iPads melden sich als Mac
+const ALS_APP = window.navigator.standalone === true ||
+  window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;
+const IM_RAHMEN = window.self !== window.top;   // z. B. auf claude.ai — da hilft der Home-Bildschirm nicht
+
+document.body.classList.toggle('app-tipp-zeigen', IST_APPLE_MOBIL && !ALS_APP && !IM_RAHMEN);
