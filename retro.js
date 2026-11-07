@@ -61,9 +61,9 @@ function amigaFarben(c, breite, hoehe) {
   c.putImageData(bild, 0, 0);
 }
 
-function zeichneCopper(c, breite, hoehe) {
-  const streifen = hoehe / COPPER.length;
-  COPPER.forEach((farbe, i) => {
+function zeichneCopper(c, breite, hoehe, farben = COPPER) {
+  const streifen = hoehe / farben.length;
+  farben.forEach((farbe, i) => {
     c.fillStyle = farbe;
     c.fillRect(0, Math.floor(i * streifen), breite, Math.ceil(streifen) + 1);
   });

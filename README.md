@@ -6,4 +6,4 @@ Ein Döner-Management-Spiel im Amiga-Look.
 
 Auf iPhone oder iPad: Link in Safari öffnen → Teilen → „Zum Home-Bildschirm“. Dann startet es wie eine App.
 
-Lead Designer: Mathis Roth · Creative Advisor: Charlotte Roth · Implementation: Claude Roth
+Lead Designer: Mathis Roth · Creative Director: Charlotte Roth · Implementation: Claude Roth

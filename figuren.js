@@ -63,14 +63,14 @@ const BAUKASTEN = {
   shirt:     { name: 'Shirt',     werte: [...SHIRTS, '#ffffff', '#222222'] },
   hose:      { name: 'Hose',      werte: HOSEN },
   extra:     { name: 'Extra',     werte: ['', 'kappe', 'brille', 'sonnenbrille', 'kopfhoerer', 'schal', 'helm',
-                                          'krone', 'superheld', 'kochmuetze', 'polizei', 'nummer', 'baskenmuetze', 'zylinder', 'kette'] },
+                                          'krone', 'superheld', 'kochmuetze', 'polizei', 'nummer', 'baskenmuetze', 'zylinder', 'kette', 'baerenfell'] },
 };
 const TEIL_NAMEN = {
   kurz: 'kurz', lang: 'lang', locken: 'Locken', afro: 'Afro', iro: 'Iro', zoepfe: 'Zöpfe', dutt: 'Dutt',
   glatze: 'Glatze', 'glatze-rand': 'Halbglatze', '': 'nichts', kappe: 'Kappe', brille: 'Brille',
   sonnenbrille: 'Sonnenbrille', kopfhoerer: 'Kopfhörer', schal: 'Fan-Schal', helm: 'Bauhelm', krone: 'Krone',
   superheld: 'Superheld', kochmuetze: 'Kochmütze', polizei: 'Polizeimütze', nummer: 'Trikot 10',
-  baskenmuetze: 'Baskenmütze', zylinder: 'Zylinder', kette: 'Goldkette',
+  baskenmuetze: 'Baskenmütze', zylinder: 'Zylinder', kette: 'Goldkette', baerenfell: 'Fellmütze',
 };
 
 function wuerfel(liste) { return liste[Math.floor(Math.random() * liste.length)]; }
@@ -312,6 +312,13 @@ function zeichneExtra(c, look, extra) {
       c.beginPath(); c.ellipse(-2, -66, 15, 6, -0.15, 0, Math.PI * 2);
       c.fillStyle = '#b31b1b'; c.fill(); c.stroke();
       kreis(c, -2, -72, 2, '#b31b1b');
+      break;
+    case 'baerenfell':   // hohe schwarze Fellmütze der Wachsoldaten
+      c.fillStyle = '#111';
+      c.beginPath(); c.ellipse(0, -76, 14, 22, 0, 0, Math.PI * 2); c.fill();
+      c.fillRect(-14, -70, 28, 12);
+      c.strokeStyle = '#ffc107'; c.lineWidth = 1.5;
+      c.beginPath(); c.moveTo(-12, -58); c.quadraticCurveTo(0, -42, 12, -58); c.stroke();
       break;
     case 'zylinder':
       kasten(c, -10, -88, 20, 22, '#111', 2);

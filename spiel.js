@@ -115,7 +115,7 @@ let vorneVorher = null;
 function neuesSpiel() {
   const lager = {};
   for (const id in ZUTATEN) lager[id] = ZUTATEN[id].gesperrt ? 0 : START_LAGER;
-  return { geld: START_GELD, tag: 1, lager, skills: [], deko: [], sterne: 0, zeitung: null, morgenZeitung: null };
+  return { geld: START_GELD, tag: 1, lager, skills: [], deko: [], sterne: 0, zeitung: null, morgenZeitung: null, stadt: 0, stadtTag: 1 };
 }
 
 function neuerTagesZaehler() { return { verdient: 0, bedient: 0, sauer: 0, vip: 0, besteCombo: 0 }; }
@@ -147,10 +147,14 @@ function comboFaktor() {
 
 function zeitungFaktor() { return spiel.zeitung === 'gut' ? 1.2 : spiel.zeitung === 'schlecht' ? 0.8 : 1; }
 
-function tagesZiel(tag = spiel.tag) { return ZIEL_START + (tag - 1) * ZIEL_PLUS; }
+// Tagesziel: steigt mit jedem Tag in der Stadt, und jede Stadt ist teurer
+function tagesZiel() { return runde((ZIEL_START + (spiel.stadtTag - 1) * ZIEL_PLUS) * aktuelleStadt().preis); }
+
+// Upgrades und Deko kosten in großen Städten mehr
+function stadtKosten(betrag) { return Math.round(betrag * aktuelleStadt().preis); }
 
 function einkaufsPreis(id) {
-  let p = ZUTATEN[id].einkauf * PACKUNG;
+  let p = ZUTATEN[id].einkauf * PACKUNG * aktuelleStadt().einkauf;
   if (hatSkill('grosshandel')) p *= 0.8;
   return Math.round(p * 100) / 100;
 }
@@ -205,7 +209,7 @@ function neuerKunde() {
   } else if (freunde.length && Math.random() < FREUNDE_OFT[einstellungen.freundeOft].chance) {
     look = baueFigur({ ...zufall(freunde), freund: true });
   } else {
-    look = neueFigur(schonDa);   // aus figuren.js
+    look = neueFigur(schonDa, gaesteHier());   // aus figuren.js, nur Gäste, die in diese Stadt passen
   }
 
   const mag = look.mag && hatDeko(look.mag) ? DEKO.find(d => d.id === look.mag) : null;
@@ -233,7 +237,7 @@ function neuerKunde() {
 }
 
 function preisFuer(bestellung) {
-  let p = PREIS[bestellung.typ];
+  let p = PREIS[bestellung.typ] * aktuelleStadt().preis;
   for (const z of bestellung.zutaten) p += ZUTATEN[z].aufpreis || 0;
   return p;
 }
@@ -339,7 +343,7 @@ function tick() {
   naechsterKunde -= dt;
   if (zeitRest > 0 && naechsterKunde <= 0) {
     if (kunden.length < MAX_SCHLANGE) neuerKunde();
-    naechsterKunde = 5 + Math.random() * 4;
+    naechsterKunde = (5 + Math.random() * 4) / aktuelleStadt().tempo;
   }
 
   // Wer vorne steht, verliert Geduld. Wer dahinter steht, nur halb so schnell.
@@ -381,6 +385,7 @@ function tagEnde() {
   spiel.zeitung = spiel.morgenZeitung;
   spiel.morgenZeitung = null;
   spiel.tag++;
+  spiel.stadtTag++;
   speichere();
   TON.tagEnde();
   for (let i = 0; i < sterne; i++) setTimeout(() => TON.stern(i), 900 + i * 350);
@@ -408,6 +413,7 @@ function zeigeAbschluss() {
       ${t.vip ? `· 🌟 ${t.vip} VIP` : ''}</p>
     ${t.zeitung ? `<p class="zeitung">${ZEITUNG[t.zeitung]}</p>` : ''}
     <p>In der Kasse: <b>${dollar(spiel.geld)}</b> · Morgen ist das Ziel ${dollar(tagesZiel())}</p>
+    ${weltreiseZeile()}
     <div class="reihe">
       <button onclick="zeigeComputer(true)">💻 Einkaufen</button>
       <button onclick="zeigeSkills(true)">🌳 Skilltree</button>
@@ -428,6 +434,45 @@ function neuerTag() {
   zeichne();
 }
 
+// ---------- Weltreise (Charlottes Idee) ----------
+
+// Alles gekauft? Dann darf man in die nächste Stadt.
+function pruefeAusbau() {
+  if (!ausbau().komplett) return;
+  const weiter = naechsteStadt();
+  TON.vip();
+  sag(weiter ? `🎉 Alles gekauft! Nach Feierabend kannst du nach ${weiter.name} ziehen ✈️`
+             : '🏆 Alles gekauft! Du hast die Weltreise geschafft!');
+}
+
+function weltreiseZeile() {
+  const a = ausbau(), hier = aktuelleStadt(), weiter = naechsteStadt();
+  if (a.komplett && weiter) return `<p class="reise-zeile">🎉 Dein Laden in ${hier.name} ist fertig ausgebaut!</p>
+      <p><button class="gruen gross reise-knopf" onclick="starteUmzug()">✈️ Weiter nach ${weiter.flagge} ${weiter.name}!</button></p>`;
+  if (a.komplett) return `<p class="reise-zeile">🏆 WELTREISE GESCHAFFT! Alle Städte, alle Läden. Mehr Städte kommen bald …</p>`;
+  return `<p>📍 ${hier.flagge} ${hier.name} · Ausbau ${a.fertig}/${a.gesamt}` +
+         (weiter ? ` — kauf alle Upgrades und Deko, dann geht's nach ${weiter.flagge} ${weiter.name}` : '') + `</p>`;
+}
+
+function starteUmzug() {
+  if (!ausbau().komplett || !naechsteStadt()) return;
+  schliesseFenster();
+  zeigeReise(spiel.stadt, spiel.stadt + 1);   // startmenue.js: die Flugzeug-Karte
+}
+
+// Wird nach der Landung aufgerufen: neuer, leerer Laden — Geld und Sterne bleiben
+function zieheUm() {
+  spiel.stadt++;
+  spiel.stadtTag = 1;
+  spiel.skills = [];
+  spiel.deko = [];
+  for (const id in ZUTATEN) spiel.lager[id] = ZUTATEN[id].gesperrt ? 0 : START_LAGER;
+  speichere();
+  wendeStadtAn();
+  neuerTag();
+  sag(`${aktuelleStadt().flagge} Willkommen in ${aktuelleStadt().name}! Neuer Laden, neues Glück. Ziel: ${dollar(tagesZiel())}`);
+}
+
 // ---------- Computer (Einkaufen) ----------
 
 function zurueckKnopf(ausTagEnde) {
@@ -435,7 +480,7 @@ function zurueckKnopf(ausTagEnde) {
 }
 
 function wer(dekoId) {
-  const namen = [...KUNDEN_TYPEN, ...VIP_TYPEN, ...einstellungen.freunde]
+  const namen = [...gaesteHier(), ...VIP_TYPEN, ...einstellungen.freunde]
     .filter(t => t.mag === dekoId).map(t => t.name);
   return namen.length ? `<small class="mag">❤ ${schuetze(namen.join(', '))}</small>` : '';
 }
@@ -463,7 +508,7 @@ function zeigeComputer(ausTagEnde, reiter = 'zutaten') {
       zeilen += `<div class="shop-zeile">
         <span>${d.emoji} ${d.name} ${'🛋️'.repeat(d.gemuetlich)}<br>${wer(d.id)}</span>
         ${hatDeko(d.id) ? '<span class="steht">✅ steht in der Bude</span>'
-          : `<button onclick="kaufeDeko('${d.id}', ${ausTagEnde})" ${spiel.geld < d.preis ? 'disabled' : ''}>Kaufen: ${dollar(d.preis)}</button>`}
+          : `<button onclick="kaufeDeko('${d.id}', ${ausTagEnde})" ${spiel.geld < stadtKosten(d.preis) ? 'disabled' : ''}>Kaufen: ${dollar(stadtKosten(d.preis))}</button>`}
       </div>`;
     }
   }
@@ -478,13 +523,14 @@ function zeigeComputer(ausTagEnde, reiter = 'zutaten') {
 
 function kaufeDeko(id, ausTagEnde) {
   const d = DEKO.find(x => x.id === id);
-  if (hatDeko(id) || spiel.geld < d.preis) return;
-  spiel.geld -= d.preis;
+  if (hatDeko(id) || spiel.geld < stadtKosten(d.preis)) return;
+  spiel.geld = runde(spiel.geld - stadtKosten(d.preis));
   spiel.deko.push(id);
   TON.kaufen();
   speichere();
   zeichne();
   sag(`${d.emoji} ${d.name} steht jetzt in der Bude!`);
+  pruefeAusbau();
   zeigeComputer(ausTagEnde, 'deko');
 }
 
@@ -514,7 +560,7 @@ function zeigeSkills(ausTagEnde) {
         <b>${s.name}</b><small>${s.text}</small>
         ${gekauft ? '✅ Gekauft'
           : gesperrt ? `🔒 Erst: ${vorher}`
-          : `<button onclick="kaufeSkill('${s.id}', ${ausTagEnde})" ${spiel.geld < s.kosten ? 'disabled' : ''}>Kaufen: ${dollar(s.kosten)}</button>`}
+          : `<button onclick="kaufeSkill('${s.id}', ${ausTagEnde})" ${spiel.geld < stadtKosten(s.kosten) ? 'disabled' : ''}>Kaufen: ${dollar(stadtKosten(s.kosten))}</button>`}
       </div>`;
     }
     html += '</div>';
@@ -529,13 +575,14 @@ function zeigeSkills(ausTagEnde) {
 
 function kaufeSkill(id, ausTagEnde) {
   const s = SKILLS.find(x => x.id === id);
-  if (hatSkill(id) || spiel.geld < s.kosten) return;
-  spiel.geld -= s.kosten;
+  if (hatSkill(id) || spiel.geld < stadtKosten(s.kosten)) return;
+  spiel.geld = runde(spiel.geld - stadtKosten(s.kosten));
   spiel.skills.push(id);
   if (s.frei) spiel.lager[s.frei] += PACKUNG;  // Geschenk: erste Packung gratis
   TON.kaufen();
   speichere();
   zeichne();
+  pruefeAusbau();
   zeigeSkills(ausTagEnde);
 }
 
@@ -617,6 +664,8 @@ function zeichne() {
   document.getElementById('tag').textContent = spiel.tag;
   document.getElementById('sterne').textContent = spiel.sterne;
   document.getElementById('gemuetlich').textContent = gemuetlichkeit();
+  const a = ausbau();
+  document.getElementById('ausbau').textContent = `${a.fertig}/${a.gesamt}`;
   zeichneUhr();
   zeichneZiel();
 
@@ -703,14 +752,16 @@ function ladeSpielstand() {
     for (const id in ZUTATEN) if (s.lager[id] === undefined) s.lager[id] = 0;  // neue Zutaten
     if (!s.deko) s.deko = [];          // alte Spielstände hatten noch keine Deko
     if (!s.sterne) s.sterne = 0;       // … und noch keine Sterne
+    if (s.stadt === undefined) s.stadt = 0;          // … und noch keine Weltreise
+    if (!s.stadtTag) s.stadtTag = s.tag;
     return s;
   } catch (e) { return null; }
 }
 
 function neuStarten() {
-  frage('Wirklich ganz von vorne anfangen? Geld, Deko und Skills sind dann weg. Deine Freunde in den Einstellungen bleiben.',
+  frage('Wirklich ganz von vorne anfangen? Geld, Deko, Skills und die Weltreise sind dann weg. Deine Freunde in den Einstellungen bleiben.',
     '🔄 Ja, von vorne',
-    () => { spiel = neuesSpiel(); speichere(); neuerTag(); if (startmenueOffen()) { pausiert = true; zeichneStartMenue(); } },
+    () => { spiel = neuesSpiel(); speichere(); wendeStadtAn(); neuerTag(); if (startmenueOffen()) { pausiert = true; zeichneStartMenue(); } },
     () => zeigeEinstellungen('spiel'));
 }
 

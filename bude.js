@@ -98,14 +98,18 @@ function zeichneWaende() {
   viereck([iso(0, 0), iso(0, LADEN_TIEFE), iso(0, LADEN_TIEFE, h), iso(0, 0, h)], FARBEN.wandLinks);
   viereck([iso(0, 0), iso(BREITE, 0), iso(BREITE, 0, h), iso(0, 0, h)], FARBEN.wandRechts);
 
-  // Schild an der hinteren Wand
+  // Schild an der hinteren Wand — in jeder Stadt ein anderes
   flach(4, 0, 70, 'x', c => {
     c.fillStyle = FARBEN.schild; c.fillRect(0, 0, 192, 30);
     c.strokeStyle = '#2b1a0e'; c.lineWidth = 2; c.strokeRect(0, 0, 192, 30);
     c.fillStyle = '#b5311e'; c.font = 'bold 22px system-ui';
     c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText('DÖNERBUDE', 96, 16);
+    const text = aktuelleStadt().schild;
+    const breite = c.measureText(text).width;
+    if (breite > 176) c.font = `bold ${Math.floor(22 * 176 / breite)}px system-ui`;
+    c.fillText(text, 96, 16);
   });
+  zeichneStadtFenster(performance.now() / 1000);
 }
 
 function zeichneSpiess(zeit) {
@@ -502,7 +506,7 @@ function malen(jetzt) {
   const massstab = passeGroesseAn();
 
   pinsel.setTransform(massstab, 0, 0, massstab, 0, 0);
-  zeichneCopper(pinsel, 770, 455);
+  zeichneCopper(pinsel, 770, 455, aktuelleStadt().himmel);
   zeichneBoden();
   malDeko('teppich', zeit);
   zeichneWaende();
@@ -519,6 +523,7 @@ function malen(jetzt) {
     ...gehende.map(k => ({ tiefe: k.x + k.y, mal: () => zeichneMensch(k, k.stimmung) })),
     ...sitzende.map(k => ({ tiefe: k.x + k.y + 0.01, mal: () => zeichneMensch(k, null, true) })),
     ...Object.keys(DEKO_VORNE).filter(hatDeko).map(id => ({ tiefe: DEKO_VORNE[id], mal: () => DEKO_MALEN[id](zeit) })),
+    { tiefe: STRASSEN_POS.x + STRASSEN_POS.y, mal: () => zeichneStrassenDeko(zeit) },
   ];
   if (hatDeko('tisch')) {
     HOCKER.forEach(h => vorne.push({ tiefe: h.x + h.y + 0.45, mal: () => malHocker(h) }));
@@ -533,3 +538,6 @@ function malen(jetzt) {
   requestAnimationFrame(malen);
 }
 requestAnimationFrame(malen);
+
+// Farben, Himmel und Schild der aktuellen Stadt einstellen
+wendeStadtAn();

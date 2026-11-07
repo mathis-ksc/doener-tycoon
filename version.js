@@ -4,9 +4,10 @@
 //  0.x.0 = neue Sachen · 0.x.y = kleine Reparaturen
 //  Die neueste Version steht immer oben.
 
-const VERSION = '0.7.1';
+const VERSION = '0.8.0';
 
 const AENDERUNGEN = [
+  { version: '0.8.0', datum: '07.11.2026', was: 'Weltreise (Idee: Charlotte): Ettlingen → Los Angeles → London → New York → Tokio → Singapur. Jede Stadt mit eigenem Laden, Look und eigenen Gästen' },
   { version: '0.7.1', datum: '07.11.2026', was: 'iPhone: Hinweis „Zum Home-Bildschirm“ für Spielen ohne Leisten, Abstand zur Kamera-Kerbe' },
   { version: '0.7.0', datum: '07.11.2026', was: 'Eigene Webadresse auf GitHub: als App auf den Home-Bildschirm, mit eigenem Icon, ohne Browser-Leisten. Credits angepasst' },
   { version: '0.6.1', datum: '07.11.2026', was: 'Vollbild-Knopf: Spiel ohne Browser-Leisten (iPad und Computer), auf Touch-Geräten automatisch beim Diskette-Einlegen' },
@@ -20,6 +21,6 @@ const AENDERUNGEN = [
 
 const MACHER = [
   { rolle: 'Lead Designer',     name: 'Mathis Roth' },
-  { rolle: 'Creative Advisor',  name: 'Charlotte Roth' },
+  { rolle: 'Creative Director', name: 'Charlotte Roth', extra: 'Erfinderin der Weltreise' },
   { rolle: 'Implementation',    name: 'Claude Roth' },
 ];
