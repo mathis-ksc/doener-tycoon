@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Döner Tycoon 2026</title>
+  <!-- Als App auf dem Home-Bildschirm (braucht eine eigene Webadresse, z. B. GitHub Pages) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Döner Tycoon">
+  <meta name="theme-color" content="#0055aa">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== OBEN: Geld, Tag, Sterne, Uhr ===== -->
+  <header>
+    <h1>🥙 Döner Tycoon 2026 <small id="untertitel">von Mathis Roth</small></h1>
+    <div class="anzeige">
+      <span title="Geld">💰 <b id="geld">0</b></span>
+      <span title="Tag">📅 Tag <b id="tag">1</b></span>
+      <span title="Alle Sterne, die du gesammelt hast">⭐ <b id="sterne">0</b></span>
+      <span title="Gemütlichkeit: so viele Sekunden warten alle Gäste länger">🛋️ <b id="gemuetlich">0</b></span>
+      <span title="Sekunden bis Ladenschluss">⏰ <b id="uhr">0</b></span>
+    </div>
+    <div class="knoepfe">
+      <button id="btn-computer">💻 Computer</button>
+      <button id="btn-skills">🌳 Skilltree</button>
+      <button id="btn-einstellungen" title="Einstellungen">⚙️</button>
+      <button id="btn-vollbild" class="vollbild-knopf" title="Vollbild an/aus" onclick="vollbildUmschalten()">⛶</button>
+      <button id="btn-menue" title="Zurück ins Hauptmenü">☰ Menü</button>
+    </div>
+  </header>
+
+  <main id="spielfeld">
+    <!-- ===== LINKS: die Bude und die Schlange ===== -->
+    <div id="links">
+      <div id="szene-rahmen">
+        <canvas id="szene" width="385" height="228"></canvas>
+        <div id="sprechblase">Willkommen in deiner Dönerbude!</div>
+      </div>
+      <div id="schlange"></div>
+    </div>
+
+    <!-- ===== RECHTS: die Theke ===== -->
+    <section id="theke">
+      <h2>Theke</h2>
+      <div id="ziel"></div>
+      <div id="combo"></div>
+      <div id="gericht"></div>
+      <div class="reihe">
+        <button class="typ" data-typ="doener">🥙 Döner</button>
+        <button class="typ" data-typ="yufka">🌯 Yufka</button>
+      </div>
+      <div id="zutaten-knoepfe"></div>
+      <div class="reihe">
+        <button id="btn-servieren" class="gross gruen">✅ Servieren <kbd>Leertaste</kbd></button>
+        <button id="btn-wegwerfen" class="gross rot">🗑️ <kbd>X</kbd></button>
+      </div>
+    </section>
+
+    <div hidden>
+      <svg id="koch" xmlns="http://www.w3.org/2000/svg" width="200" height="220" viewBox="0 0 200 220" aria-label="Der Koch">
+        <!-- roter Kreis hinten (nur fürs Logo) -->
+        <circle class="nur-logo" cx="105" cy="115" r="85" fill="#e8452c"/>
+        <circle class="nur-logo" cx="105" cy="115" r="85" fill="none" stroke="#222" stroke-width="4"/>
+        <!-- Dönerspieß (nur fürs Logo — in der Bude dreht sich ein eigener) -->
+        <line class="nur-logo" x1="55" y1="10" x2="55" y2="40" stroke="#222" stroke-width="4"/>
+        <path class="nur-logo" d="M38 40 Q55 30 72 40 L76 175 Q55 185 34 175 Z" fill="#9b4a1c" stroke="#222" stroke-width="4"/>
+        <path class="nur-logo" d="M40 65 Q55 60 72 65 M38 90 Q55 85 73 90 M37 115 Q55 110 74 115 M36 140 Q55 135 75 140 M35 162 Q55 157 75 162"
+              stroke="#d98b4f" stroke-width="3" fill="none"/>
+        <!-- Körper / Kochjacke -->
+        <path d="M80 215 Q85 150 125 145 Q170 150 178 215 Z" fill="#f4f4f4" stroke="#222" stroke-width="4"/>
+        <circle cx="118" cy="180" r="3" fill="#888"/><circle cx="118" cy="198" r="3" fill="#888"/>
+        <circle cx="140" cy="180" r="3" fill="#888"/><circle cx="140" cy="198" r="3" fill="#888"/>
+        <!-- rotes Halstuch -->
+        <path d="M100 148 L128 162 L156 148 L150 160 L128 175 L106 160 Z" fill="#d61f1f" stroke="#222" stroke-width="3"/>
+        <!-- Kopf -->
+        <ellipse cx="128" cy="112" rx="32" ry="36" fill="#f2c39b" stroke="#222" stroke-width="4"/>
+        <circle cx="160" cy="115" r="8" fill="#f2c39b" stroke="#222" stroke-width="3"/>
+        <!-- Augen -->
+        <ellipse cx="117" cy="102" rx="5" ry="7" fill="#fff" stroke="#222" stroke-width="2"/>
+        <ellipse cx="137" cy="102" rx="5" ry="7" fill="#fff" stroke="#222" stroke-width="2"/>
+        <circle cx="118" cy="104" r="2.5" fill="#222"/><circle cx="138" cy="104" r="2.5" fill="#222"/>
+        <!-- Nase -->
+        <ellipse cx="128" cy="116" rx="7" ry="6" fill="#e9a77d" stroke="#222" stroke-width="2"/>
+        <!-- Schnurrbart -->
+        <path d="M128 122 Q112 118 98 128 Q108 124 114 130 Q122 128 128 125 Q134 128 142 130 Q148 124 158 128 Q144 118 128 122 Z"
+              fill="#222"/>
+        <!-- Lachen -->
+        <path d="M116 132 Q128 146 140 132 Z" fill="#7a1f1f" stroke="#222" stroke-width="2"/>
+        <!-- Kochmütze -->
+        <path d="M98 85 Q90 55 110 52 Q115 30 135 38 Q155 30 160 55 Q172 62 158 85 Z" fill="#fff" stroke="#222" stroke-width="4"/>
+        <rect x="98" y="78" width="60" height="12" rx="3" fill="#fff" stroke="#222" stroke-width="4"/>
+        <!-- Messer -->
+        <line x1="10" y1="185" x2="95" y2="200" stroke="#bbb" stroke-width="9" stroke-linecap="round"/>
+        <line x1="10" y1="185" x2="95" y2="200" stroke="#222" stroke-width="1.5"/>
+        <rect x="93" y="194" width="22" height="11" rx="4" fill="#6b3d1e" stroke="#222" stroke-width="2" transform="rotate(10 104 199)"/>
+      </svg>
+    </div>
+  </main>
+
+  <!-- ===== HANDY HOCHKANT: bitte quer drehen (nur sichtbar im Hochformat auf Touch-Geräten) ===== -->
+  <div id="drehen">
+    <div class="drehen-bild"><div class="handy"></div><span class="pfeil">↻</span></div>
+    <p>BITTE DREH DEIN<br>HANDY QUER!</p>
+    <small>Döner Tycoon 2026 spielt man im Querformat.</small>
+  </div>
+
+  <!-- ===== STARTMENÜ (startmenue.js) ===== -->
+  <div id="start" data-modus="diskette">
+    <div id="start-buehne">
+      <canvas id="start-bild" width="384" height="240"></canvas>
+      <div id="start-menue"></div>
+      <a id="start-version" href="#" onclick="zeigeAenderungen(); return false;"></a>
+      <a id="start-vollbild" class="vollbild-knopf" href="#" onclick="vollbildUmschalten(); return false;">⛶ VOLLBILD</a>
+    </div>
+  </div>
+
+  <!-- ===== Fenster (Computer, Skilltree, Einstellungen, Tagesende) ===== -->
+  <div id="fenster" class="versteckt">
+    <div id="fenster-inhalt"></div>
+  </div>
+
+  <script src="version.js"></script>
+  <script src="retro.js"></script>
+  <script src="ton.js"></script>
+  <script src="figuren.js"></script>
+  <script src="einstellungen.js"></script>
+  <script src="spiel.js"></script>
+  <script src="bude.js"></script>
+  <script src="musik.js"></script>
+  <script src="startmenue.js"></script>
+  <script src="mobil.js"></script>
+</body>
+</html>
