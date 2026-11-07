@@ -2,7 +2,7 @@
 
 Ein Döner-Management-Spiel im Amiga-Look.
 
-**Spielen:** https://cantona2k.github.io/doener-tycoon/
+**Spielen:** https://mathis-ksc.github.io/doener-tycoon/
 
 Auf iPhone oder iPad: Link in Safari öffnen → Teilen → „Zum Home-Bildschirm“. Dann startet es wie eine App.
 
